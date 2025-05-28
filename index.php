@@ -1,44 +1,47 @@
 <?php
 require_once 'functions.php';
 
-// TODO: Implement the task scheduler, email form and logic for email registration.
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (isset($_POST['task-name'])) {
+        addTask(trim($_POST['task-name']));
+    }
 
-// In HTML, you can add desired wrapper `<div>` elements or other elements to style the page. Just ensure that the following elements retain their provided IDs.
+    if (isset($_POST['email'])) {
+        subscribeEmail(trim($_POST['email']));
+    }
+}
+
+if (isset($_GET['delete'])) {
+    deleteTask($_GET['delete']);
+}
+
+if (isset($_GET['toggle'])) {
+    markTaskAsCompleted($_GET['toggle'], $_GET['status'] === '1' ? 1 : 0);
+}
+
+$tasks = getAllTasks();
 ?>
-<!DOCTYPE html>
-<html>
 
-<head>
-	<!-- Implement Header !-->
-</head>
+<h2>Task Manager</h2>
+<form method="POST">
+    <input type="text" name="task-name" id="task-name" placeholder="Enter new task" required>
+    <button type="submit" id="add-task">Add Task</button>
+</form>
 
-<body>
+<ul class="tasks-list">
+    <?php foreach ($tasks as $task): ?>
+        <li class="task-item <?= $task['completed'] ? 'completed' : '' ?>">
+            <input type="checkbox" class="task-status" 
+                onchange="location.href='?toggle=<?= $task['id'] ?>&status=<?= $task['completed'] ? '0' : '1' ?>'" 
+                <?= $task['completed'] ? 'checked' : '' ?>>
+            <?= htmlspecialchars($task['name']) ?>
+            <a href="?delete=<?= $task['id'] ?>"><button class="delete-task">Delete</button></a>
+        </li>
+    <?php endforeach; ?>
+</ul>
 
-	<!-- Add Task Form -->
-	<form method="POST" action="">
-		<!-- Implement Form !-->
-		<input type="text" name="task-name" id="task-name" placeholder="Enter new task" required>
-		<button type="submit" id="add-task">Add Task</button>
-	</form>
-
-	<!-- Tasks List -->
-	<ul id="tasks-list">
-		<!-- Implement Tasks List (Your task item must have below
-		provided elements you can modify there position, wrap them
-		in another container, or add styles but they must contain
-		specified classnames and input type )!-->
-		<li class="task-item">
-			<input type="checkbox" class="task-status">
-			<button class="delete-task">Delete</button>
-		</li>	
-	</ul>
-
-	<!-- Subscription Form -->
-	<form method="POST" action="">
-		<!-- Implement Form !-->
-		<button type="submit" id="submit-email">Subscribe</button>
-	</form>
-
-</body>
-
-</html>
+<h2>Email Subscription</h2>
+<form method="POST">
+    <input type="email" name="email" required />
+    <button id="submit-email">Submit</button>
+</form>
